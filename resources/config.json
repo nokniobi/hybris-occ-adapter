@@ -1,3 +1,4 @@
 {
-    "ootbWsDtoFile": "./resources/commercewebservicescommons-beans.xml"
+    "ootbWsDtoFile": "./resources/commercewebservicescommons-beans.xml",
+    "generatedModels":"./src/core/generated/types.ts"
 }

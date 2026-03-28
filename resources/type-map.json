@@ -1,0 +1,9 @@
+{
+    "String": "string",
+    "java.lang.String": "string",
+    "Double": "number",
+    "Integer": "number",
+    "Long": "number",
+    "java.math.BigDecimal": "number",
+    "java.lang.Date": "Date"
+}

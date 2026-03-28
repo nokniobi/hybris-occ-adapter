@@ -18,7 +18,6 @@ class Context {
     }
 
     getInjectable<T>(type: new (...args: any[]) => T): T {
-        console.log(`Calling injectable by ${type.name}`)
         if (this.instances.has(type)) {
             return this.instances.get(type) as T;
         }
