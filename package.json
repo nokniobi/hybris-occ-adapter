@@ -1,0 +1,21 @@
+{
+  "name": "hybris-occ-adapter",
+  "version": "1.0.0",
+  "description": "Adapter for SAP Commerce (Hybris) OCC Api",
+  "license": "ISC",
+  "author": "Matvii Chebukin",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "build:start": "tsc && node ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  }
+}
