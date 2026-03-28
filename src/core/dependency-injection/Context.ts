@@ -23,7 +23,6 @@ class Context {
             return this.instances.get(type) as T;
         }
         const paramTypes: Function[] = Reflect.getMetadata("design:paramtypes", type) ?? [];
-        console.log(`Param types for ${type.name} ${paramTypes.map(f => f.name)}`)
         const args = paramTypes.map(paramType => this.getInjectable(paramType as new (...args: any[]) => unknown));
         const instance = new type(...args);
         this.instances.set(type, instance);

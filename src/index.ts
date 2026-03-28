@@ -2,7 +2,6 @@ import { injectable } from "./core/decorators/injectable";
 import { getContext } from "./core/dependency-injection/Context";
 import { GenerateModelsStrategy } from "./core/strategy/GenerateModelsStrategy";
 
-
 @injectable()
 export class Main {
 
