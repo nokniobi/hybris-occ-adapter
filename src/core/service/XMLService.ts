@@ -2,16 +2,26 @@ import { BeanDefinition } from "../models/BeanDefinition";
 import { DOMParser } from "@xmldom/xmldom"
 import { BeanProperty } from "../models/BeanProperty";
 
-
-// TODO: Erase strings into enum or static variables
 export class XMLService {
+    private static readonly TAG_BEAN = "bean";
+    private static readonly TAG_ENUM = "enum";
+    private static readonly TAG_PROPERTY = "property";
+    private static readonly TAG_VALUE = "value";
+    private static readonly TAG_DESCRIPTION = "description";
+
+    private static readonly ATTR_CLASS = "class";
+    private static readonly ATTR_NAME = "name";
+    private static readonly ATTR_TYPE = "type";
+
+    private static readonly DEF_TYPE_BEAN = "bean";
+    private static readonly DEF_TYPE_ENUM = "enum";
 
     parse(xml: string): BeanDefinition[] {
 
         const dom = new DOMParser().parseFromString(xml);
 
-        const beans = dom.getElementsByTagName("bean");
-        const enums = dom.getElementsByTagName("enum");
+        const beans = dom.getElementsByTagName(XMLService.TAG_BEAN);
+        const enums = dom.getElementsByTagName(XMLService.TAG_ENUM);
 
         const beanDefinitions: BeanDefinition[] = [];
         for (const bean of Array.from(beans)) {
@@ -26,12 +36,12 @@ export class XMLService {
 
     private processBean(bean: Element): BeanDefinition {
         const beanDefinition: BeanDefinition = new BeanDefinition();
-        beanDefinition.type = "bean";
+        beanDefinition.type = XMLService.DEF_TYPE_BEAN;
         beanDefinition.class = this.getClass(bean);
         beanDefinition.description = this.getDescription(bean);
 
         const propertyDefinitions: BeanProperty[] = [];
-        const properties = bean.getElementsByTagName("property");
+        const properties = bean.getElementsByTagName(XMLService.TAG_PROPERTY);
         for (const property of Array.from(properties)) {
             propertyDefinitions.push(this.processProperty(property));
         }
@@ -42,10 +52,10 @@ export class XMLService {
 
     private processEnums(_enum: Element): BeanDefinition {
         const beanDefinition: BeanDefinition = new BeanDefinition();
-        beanDefinition.type = "enum";
+        beanDefinition.type = XMLService.DEF_TYPE_ENUM;
         beanDefinition.class = this.getClass(_enum)
         const enumValues: string[] = [];
-        for (const value of Array.from(_enum.getElementsByTagName("value"))) {
+        for (const value of Array.from(_enum.getElementsByTagName(XMLService.TAG_VALUE))) {
             enumValues.push(value.childNodes.item(0).textContent as string);
         }
         beanDefinition.values = enumValues;
@@ -61,22 +71,22 @@ export class XMLService {
     }
 
     private getDescription(node: Element): string {
-        return node?.getElementsByTagName("description")?.
+        return node?.getElementsByTagName(XMLService.TAG_DESCRIPTION)?.
             item(0)?.
             childNodes?.
             item(0)?.textContent as string ?? "";
     }
 
     private getClass(node: Element): string {
-        return node.getAttribute("class") as string
+        return node.getAttribute(XMLService.ATTR_CLASS) as string
     }
 
     private getName(node: Element): string {
-        return node.getAttribute("name") as string
+        return node.getAttribute(XMLService.ATTR_NAME) as string
     }
 
     private getType(node: Element): string {
-        return node.getAttribute("type") as string
+        return node.getAttribute(XMLService.ATTR_TYPE) as string
     }
 
 }

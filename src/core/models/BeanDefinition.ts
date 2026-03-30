@@ -9,12 +9,29 @@ export class BeanDefinition {
 
 
     toTypeString(): string {
-        // TODO:process enums
+
+        if (this.type === "bean") {
+            return this.toInterfaceString();
+        } else {
+            return this.toEnumString()
+        }
+
+    }
+
+    toInterfaceString(): string {
         return `
             // ${this.description ? (this.description as string).replace("\n", "") : ""}
-            interface ${this.class} {
-                ${this.properties ? this.properties.map((p) => p.toTypeString()).join(",\n") : ""}
-            }
-        `;
+            export interface ${this.class} {
+                ${this.properties ? this.properties.map((p) => p.toTypeString()).join("\n") : ""}
+            }`;
+    }
+
+    toEnumString(): string {
+        return `
+            //${this.description}
+
+            export const enum ${this.class} {
+                ${this.values?.map((v) => `${v}="${v}"`).join(",\n")}
+            }`
     }
 }

@@ -16,5 +16,11 @@ export class Main {
     }
 }
 
-// Entry Point
-getContext().getInjectable<Main>(Main).start()
+
+try {
+    getContext().getInjectable<Main>(Main).start();
+    process.exit(0);
+} catch (ex) {
+    console.error("Error occured:", ex)
+    process.exit(1);
+}

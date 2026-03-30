@@ -21,10 +21,11 @@ export class GenerateModelsStrategy {
         this.convertTypesStrategy = convertTypesStrategy;
     }
 
-    async generate() {
+    generate() {
         console.log("============ Generating =============");
-        const xml = await this.fileService.read(config.ootbWsDtoFile);
-        const beans: BeanDefinition[] = this.xmlService.parse(xml);
+        const beans: BeanDefinition[] = config.ootbWsDtoFile.flatMap((location) =>
+            this.xmlService.parse(this.fileService.read(location))
+        );
         const types = new Set();
         beans.forEach((b) => {
             b.properties?.forEach((p) => {

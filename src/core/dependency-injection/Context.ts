@@ -1,5 +1,9 @@
 import "reflect-metadata";
 
+/**
+ * Light lib to build dependency injection for this project 
+ * 
+ */
 class Context {
 
     private constructors: Map<Function, Function>;
