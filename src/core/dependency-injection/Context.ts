@@ -14,19 +14,23 @@ class Context {
         this.instances = new Map();
     }
 
-    register(constructor: Function): void {
-        if (this.constructors.has(constructor)) {
+    register(resource: Function): void {
+        if (this.constructors.has(resource)) {
             return;
         }
-        this.constructors.set(constructor, constructor);
+        this.constructors.set(resource, resource);
     }
 
-    getInjectable<T>(type: new (...args: any[]) => T): T {
+    getResource<T>(type: new (...args: any[]) => T): T {
         if (this.instances.has(type)) {
             return this.instances.get(type) as T;
         }
         const paramTypes: Function[] = Reflect.getMetadata("design:paramtypes", type) ?? [];
-        const args = paramTypes.map(paramType => this.getInjectable(paramType as new (...args: any[]) => unknown));
+        const unregistered = paramTypes.filter((p) => !this.constructors.has(p));
+        if (unregistered.length > 0) {
+            throw new Error(`Unregistered dependencies for ${type.name}: ${unregistered.map(p => p.name).join(", ")}`);
+        }
+        const args = paramTypes.map(paramType => this.getResource(paramType as new (...args: any[]) => unknown));
         const instance = new type(...args);
         this.instances.set(type, instance);
         return instance;
@@ -34,7 +38,7 @@ class Context {
 
 }
 
-var globalContext: Context;
+let globalContext: Context;
 
 export function getContext(): Context {
     if (!globalContext) {

@@ -1,11 +1,13 @@
 import * as path from "path";
 import * as fs from "fs"
+import { resource } from "../decorators/resource";
 
 
 /**
  * File service to do IO operations
  * 
  */
+@resource()
 export class FileService {
 
     write(location: string, content: string): void {

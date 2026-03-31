@@ -1,7 +1,12 @@
 import { BeanDefinition } from "../models/BeanDefinition";
 import { DOMParser } from "@xmldom/xmldom"
-import { BeanProperty } from "../models/BeanProperty";
+import { PropertyDefinition } from "../models/PropertyDefinition";
+import { DefinitionType } from "../models/DefinitionType";
+import { EnumDefinition } from "../models/EnumDefinition";
+import { AbstractDefinition } from "../models/AbstractDefinition";
+import { resource } from "../decorators/resource";
 
+@resource()
 export class XMLService {
     private static readonly TAG_BEAN = "bean";
     private static readonly TAG_ENUM = "enum";
@@ -13,61 +18,61 @@ export class XMLService {
     private static readonly ATTR_NAME = "name";
     private static readonly ATTR_TYPE = "type";
 
-    private static readonly DEF_TYPE_BEAN = "bean";
-    private static readonly DEF_TYPE_ENUM = "enum";
 
-    parse(xml: string): BeanDefinition[] {
+
+    parse(xml: string): AbstractDefinition[] {
 
         const dom = new DOMParser().parseFromString(xml);
 
         const beans = dom.getElementsByTagName(XMLService.TAG_BEAN);
         const enums = dom.getElementsByTagName(XMLService.TAG_ENUM);
 
-        const beanDefinitions: BeanDefinition[] = [];
+        const beanDefinitions: AbstractDefinition[] = [];
         for (const bean of Array.from(beans)) {
             beanDefinitions.push(this.processBean(bean));
         }
         for (const _enum of Array.from(enums)) {
-            beanDefinitions.push(this.processEnums(_enum));
+            beanDefinitions.push(this.processEnum(_enum));
         }
 
         return beanDefinitions;
     }
 
     private processBean(bean: Element): BeanDefinition {
-        const beanDefinition: BeanDefinition = new BeanDefinition();
-        beanDefinition.type = XMLService.DEF_TYPE_BEAN;
-        beanDefinition.class = this.getClass(bean);
-        beanDefinition.description = this.getDescription(bean);
+        const beanDefinition: BeanDefinition = new BeanDefinition(
+            DefinitionType.bean,
+            this.getClass(bean),
+            this.getDescription(bean)
+        );
 
-        const propertyDefinitions: BeanProperty[] = [];
         const properties = bean.getElementsByTagName(XMLService.TAG_PROPERTY);
         for (const property of Array.from(properties)) {
-            propertyDefinitions.push(this.processProperty(property));
+            beanDefinition.addProperty(this.processProperty(property))
         }
-        beanDefinition.properties = propertyDefinitions;
 
         return beanDefinition;
     }
 
-    private processEnums(_enum: Element): BeanDefinition {
-        const beanDefinition: BeanDefinition = new BeanDefinition();
-        beanDefinition.type = XMLService.DEF_TYPE_ENUM;
-        beanDefinition.class = this.getClass(_enum)
-        const enumValues: string[] = [];
+    private processEnum(_enum: Element): EnumDefinition {
+        const enumDefinition: EnumDefinition = new EnumDefinition(
+            DefinitionType.enum,
+            this.getClass(_enum)
+        );
+
         for (const value of Array.from(_enum.getElementsByTagName(XMLService.TAG_VALUE))) {
-            enumValues.push(value.childNodes.item(0).textContent as string);
+            enumDefinition.addValue(value.childNodes.item(0).textContent as string);
         }
-        beanDefinition.values = enumValues;
-        return beanDefinition;
+        return enumDefinition;
     }
 
-    private processProperty(property: Element): BeanProperty {
-        const beanProperty = new BeanProperty();
-        beanProperty.name = this.getName(property);
-        beanProperty.type = this.getType(property);
-        beanProperty.description = this.getDescription(property);
-        return beanProperty;
+    private processProperty(property: Element): PropertyDefinition {
+        const propertyDefinition = new PropertyDefinition(
+            DefinitionType.property,
+            this.getType(property),
+            this.getName(property),
+            this.getDescription(property)
+        );
+        return propertyDefinition;
     }
 
     private getDescription(node: Element): string {

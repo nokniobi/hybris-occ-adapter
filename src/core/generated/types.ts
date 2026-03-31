@@ -5152,50 +5152,25 @@ export interface SAPOrderSubsequentDocumentEntryWsDTO {
 }
 
 //undefined
-
-export const enum PriceWsDTOType {
-    BUY = "BUY",
-    FROM = "FROM"
-}
+export type PriceWsDTOType = "BUY" | "FROM";
 
 //undefined
-
-export const enum ImageWsDTOType {
-    PRIMARY = "PRIMARY",
-    GALLERY = "GALLERY"
-}
+export type ImageWsDTOType = "PRIMARY" | "GALLERY";
 
 //undefined
-
-export const enum AccuracyWsDTOType {
-    ESTIMATED = "ESTIMATED",
-    UNKNOWN = "UNKNOWN"
-}
+export type AccuracyWsDTOType = "ESTIMATED" | "UNKNOWN";
 
 //undefined
-
-export const enum ReturnRequestStatusWsDTOType {
-    CANCELLING = "CANCELLING"
-}
+export type ReturnRequestStatusWsDTOType = "CANCELLING";
 
 //undefined
-
-export const enum CaptchaProviderWsDtoType {
-    GOOGLE = "GOOGLE"
-}
+export type CaptchaProviderWsDtoType = "GOOGLE";
 
 //undefined
-
-export const enum CaptchaVersionWsDtoType {
-    V2 = "V2"
-}
+export type CaptchaVersionWsDtoType = "V2";
 
 //undefined
-
-export const enum VerificationPurposeWsDTOType {
-    LOGIN = "LOGIN",
-    REGISTRATION = "REGISTRATION"
-}
+export type VerificationPurposeWsDTOType = "LOGIN" | "REGISTRATION";
 
 // Error message
 export interface ErrorWsDTO {
@@ -5373,8 +5348,4 @@ export interface SAPAttachmentWsDTO {
 }
 
 //undefined
-
-export const enum ExceptionMessageFormatterType {
-    FORWARD = "FORWARD",
-    GENERIC = "GENERIC"
-}
+export type ExceptionMessageFormatterType = "FORWARD" | "GENERIC";

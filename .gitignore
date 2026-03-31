@@ -1,6 +1,7 @@
 dist
 node_modules
 package-lock.json
+.claude/*
 
 # SAP Commerce bean definition files (SAP copyright - cannot be redistributed)
 resources/commercewebservicescommons-beans.xml

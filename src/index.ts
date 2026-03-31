@@ -1,8 +1,8 @@
-import { injectable } from "./core/decorators/injectable";
+import { resource } from "./core/decorators/resource";
 import { getContext } from "./core/dependency-injection/Context";
 import { GenerateModelsStrategy } from "./core/strategy/GenerateModelsStrategy";
 
-@injectable()
+@resource()
 export class Main {
 
     private generateStrategy: GenerateModelsStrategy;
@@ -18,7 +18,7 @@ export class Main {
 
 
 try {
-    getContext().getInjectable<Main>(Main).start();
+    getContext().getResource<Main>(Main).start();
     process.exit(0);
 } catch (ex) {
     console.error("Error occured:", ex)

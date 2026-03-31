@@ -1,5 +1,8 @@
 import { BeanDefinition } from "../models/BeanDefinition";
 import TYPES_MAP from "../../../resources/type-map.json";
+import { AbstractDefinition } from "../models/AbstractDefinition";
+import { EnumDefinition } from "../models/EnumDefinition";
+import { resource } from "../decorators/resource";
 
 /**
  * Converts Java type strings from bean.xml into their TypeScript equivalents.
@@ -15,22 +18,37 @@ import TYPES_MAP from "../../../resources/type-map.json";
  *
  * Type mappings are driven by `resources/type-map.json`.
  */
-export class ConvertTypesStrategy {
+@resource()
+export class ConvertTypeStrategy {
 
     private static GENERIC = /[<|>]/
     private static ARRAY = "[]";
     private static DEFAULT_TS_TYPE = "unknown"
 
-    convert(beanDefinitions: BeanDefinition[]): BeanDefinition[] {
-        for (const bean of beanDefinitions) {
-            bean.class = this.getTypescriptClass(bean.class)
-            if (bean.properties) {
-                for (const property of bean.properties) {
-                    property.type = this.getTypescriptClass(property.type);
-                }
+    // TODO: Decide if I want to leave mutation here
+    convert(definitions: AbstractDefinition[]): AbstractDefinition[] {
+        for (const def of definitions) {
+            if (def instanceof BeanDefinition) {
+                this.processBean(def);
+            }
+            if (def instanceof EnumDefinition) {
+                this.processEnum(def);
             }
         }
-        return beanDefinitions;
+        return definitions;
+    }
+
+    private processBean(bean: BeanDefinition): void {
+        bean.class = this.getTypescriptClass(bean.class)
+        if (bean.properties) {
+            for (const property of bean.properties) {
+                property.class = this.getTypescriptClass(property.class);
+            }
+        }
+    }
+
+    private processEnum(_enum: EnumDefinition) {
+        _enum.class = this.getTypescriptClass(_enum.class);
     }
 
     private getTypescriptClass(javaClass: string): string {
@@ -46,26 +64,25 @@ export class ConvertTypesStrategy {
 
     private getCollectionType(javaClass: string): string {
         if (this.isList(javaClass)) {
-            return `${this.getReferenceType(this.eraseGeneric(javaClass))}${ConvertTypesStrategy.ARRAY}`
+            return `${this.getReferenceType(this.eraseGeneric(javaClass))}${ConvertTypeStrategy.ARRAY}`
         }
         if (this.isMap(javaClass)) {
             const params = this.eraseGeneric(javaClass).split(",").map(p => p.trim());
-            const key = this.getPrimitiveType(params[0] ?? "") ?? this.getReferenceType(params[0] ?? ConvertTypesStrategy.DEFAULT_TS_TYPE);
-            const value = this.getPrimitiveType(params[1] ?? "") ?? this.getReferenceType(params[1] ?? ConvertTypesStrategy.DEFAULT_TS_TYPE);
+            const key = this.getPrimitiveType(params[0] ?? "") ?? this.getReferenceType(params[0] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE);
+            const value = this.getPrimitiveType(params[1] ?? "") ?? this.getReferenceType(params[1] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE);
             return `Record<${key}, ${value}>`;
         }
         throw new Error(`List or Map was expected for ${javaClass}`);
     }
 
     private getGenericType(javaClass: string): string {
-        // TODO template string
         return `${this.getReferenceType(javaClass)}` + "<" + this.eraseGeneric(javaClass) + ">";
     }
 
     private getReferenceType(javaClass: string): string {
         const plainType = javaClass.replace(/<.*>/, "");
         const classpath = plainType.split(".");
-        return classpath[classpath.length - 1] ?? ConvertTypesStrategy.DEFAULT_TS_TYPE;
+        return classpath[classpath.length - 1] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE;
     }
 
     private getPrimitiveType(javaClass: string): string | null {
@@ -77,7 +94,7 @@ export class ConvertTypesStrategy {
     }
 
     private isGeneric(type: string): boolean {
-        return ConvertTypesStrategy.GENERIC.test(type);
+        return ConvertTypeStrategy.GENERIC.test(type);
     }
 
     private isList(type: string): boolean {
