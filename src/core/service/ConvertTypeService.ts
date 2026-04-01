@@ -2,7 +2,7 @@ import { BeanDefinition } from "../models/BeanDefinition";
 import TYPES_MAP from "../../../resources/type-map.json";
 import { AbstractDefinition } from "../models/AbstractDefinition";
 import { EnumDefinition } from "../models/EnumDefinition";
-import { resource } from "../decorators/resource";
+import { occ_dependency } from "../decorators/occ-dependency";
 
 /**
  * Converts Java type strings from bean.xml into their TypeScript equivalents.
@@ -18,8 +18,8 @@ import { resource } from "../decorators/resource";
  *
  * Type mappings are driven by `resources/type-map.json`.
  */
-@resource()
-export class ConvertTypeStrategy {
+@occ_dependency()
+export class ConvertTypeService {
 
     private static GENERIC = /[<|>]/
     private static ARRAY = "[]";
@@ -64,12 +64,12 @@ export class ConvertTypeStrategy {
 
     private getCollectionType(javaClass: string): string {
         if (this.isList(javaClass)) {
-            return `${this.getReferenceType(this.eraseGeneric(javaClass))}${ConvertTypeStrategy.ARRAY}`
+            return `${this.getReferenceType(this.eraseGeneric(javaClass))}${ConvertTypeService.ARRAY}`
         }
         if (this.isMap(javaClass)) {
             const params = this.eraseGeneric(javaClass).split(",").map(p => p.trim());
-            const key = this.getPrimitiveType(params[0] ?? "") ?? this.getReferenceType(params[0] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE);
-            const value = this.getPrimitiveType(params[1] ?? "") ?? this.getReferenceType(params[1] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE);
+            const key = this.getPrimitiveType(params[0] ?? "") ?? this.getReferenceType(params[0] ?? ConvertTypeService.DEFAULT_TS_TYPE);
+            const value = this.getPrimitiveType(params[1] ?? "") ?? this.getReferenceType(params[1] ?? ConvertTypeService.DEFAULT_TS_TYPE);
             return `Record<${key}, ${value}>`;
         }
         throw new Error(`List or Map was expected for ${javaClass}`);
@@ -82,7 +82,7 @@ export class ConvertTypeStrategy {
     private getReferenceType(javaClass: string): string {
         const plainType = javaClass.replace(/<.*>/, "");
         const classpath = plainType.split(".");
-        return classpath[classpath.length - 1] ?? ConvertTypeStrategy.DEFAULT_TS_TYPE;
+        return classpath[classpath.length - 1] ?? ConvertTypeService.DEFAULT_TS_TYPE;
     }
 
     private getPrimitiveType(javaClass: string): string | null {
@@ -94,7 +94,7 @@ export class ConvertTypeStrategy {
     }
 
     private isGeneric(type: string): boolean {
-        return ConvertTypeStrategy.GENERIC.test(type);
+        return ConvertTypeService.GENERIC.test(type);
     }
 
     private isList(type: string): boolean {

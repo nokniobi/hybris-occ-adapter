@@ -3,5 +3,8 @@
         "./resources/commercewebservicescommons-beans.xml",
         "./resources/webservicescommons-beans.xml"
     ],
+    "customWsDtoFile": [
+        "./resources/custom-beans.xml"
+    ],
     "generatedModels": "./src/core/generated/types.ts"
 }

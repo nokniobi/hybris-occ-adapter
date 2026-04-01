@@ -6,3 +6,4 @@ package-lock.json
 # SAP Commerce bean definition files (SAP copyright - cannot be redistributed)
 resources/commercewebservicescommons-beans.xml
 resources/webservicescommons-beans.xml
+resources/custom-beans.xml

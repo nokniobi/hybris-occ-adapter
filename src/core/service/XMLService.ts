@@ -4,9 +4,9 @@ import { PropertyDefinition } from "../models/PropertyDefinition";
 import { DefinitionType } from "../models/DefinitionType";
 import { EnumDefinition } from "../models/EnumDefinition";
 import { AbstractDefinition } from "../models/AbstractDefinition";
-import { resource } from "../decorators/resource";
+import { occ_dependency } from "../decorators/occ-dependency";
 
-@resource()
+@occ_dependency()
 export class XMLService {
     private static readonly TAG_BEAN = "bean";
     private static readonly TAG_ENUM = "enum";

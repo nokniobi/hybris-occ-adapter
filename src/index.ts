@@ -1,13 +1,13 @@
-import { resource } from "./core/decorators/resource";
+import { occ_dependency } from "./core/decorators/occ-dependency";
 import { getContext } from "./core/dependency-injection/Context";
-import { GenerateModelsStrategy } from "./core/strategy/GenerateModelsStrategy";
+import { GenerateModelsService } from "./core/service/GenerateModelsService";
 
-@resource()
+@occ_dependency()
 export class Main {
 
-    private generateStrategy: GenerateModelsStrategy;
+    private generateStrategy: GenerateModelsService;
 
-    constructor(generateStrategy: GenerateModelsStrategy) {
+    constructor(generateStrategy: GenerateModelsService) {
         this.generateStrategy = generateStrategy;
     }
 

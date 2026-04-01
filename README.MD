@@ -31,6 +31,12 @@ resources/commercewebservicescommons-beans.xml
 resources/webservicescommons-beans.xml
 ```
 
+Optionally, place your custom bean override file at:
+
+```
+resources/custom-beans.xml
+```
+
 Install dependencies:
 
 ```bash
@@ -54,6 +60,15 @@ npm start
 
 The generated TypeScript types will be written to `src/core/generated/types.ts`.
 
+## Custom bean overrides
+
+You can override or extend OOTB bean definitions without modifying the SAP-provided XML files. Place your custom `*-beans.xml` file(s) at the path(s) listed under `customWsDtoFile` in `config.json`.
+
+Merge behaviour:
+- If a custom bean matches an OOTB bean by class name, its property types and descriptions overwrite the OOTB ones.
+- If a custom bean has no OOTB counterpart, it is appended to the output as a new type.
+- Properties present only in the custom bean (not in the OOTB bean) are discarded.
+
 ## Configuration
 
 `resources/config.json` controls input/output paths:
@@ -63,6 +78,9 @@ The generated TypeScript types will be written to `src/core/generated/types.ts`.
     "ootbWsDtoFile": [
         "./resources/commercewebservicescommons-beans.xml",
         "./resources/webservicescommons-beans.xml"
+    ],
+    "customWsDtoFile": [
+        "./resources/custom-beans.xml"
     ],
     "generatedModels": "./src/core/generated/types.ts"
 }
@@ -77,13 +95,21 @@ Java-to-TypeScript type mappings are defined in `resources/type-map.json`. You c
 ```
 src/
   core/
-    generated/       # Output — generated TypeScript types
-    models/          # AbstractDefinition, BeanDefinition, EnumDefinition, PropertyDefinition, DefinitionType
-    service/         # FileService (I/O), XMLService (XML parsing)
-    strategy/        # GenerateModelsStrategy, ConvertTypesStrategy
+    decorators/           # @occ_dependency() — registers classes in the DI context
+    dependency-injection/ # Lightweight IoC container (Context)
+    generated/            # Output — generated TypeScript types
+    models/               # AbstractDefinition, BeanDefinition, EnumDefinition,
+                          #   PropertyDefinition, DefinitionType
+    service/
+      FileService          # File I/O
+      XMLService           # Parses *-beans.xml into definition models
+      ConvertTypeService   # Maps Java types to TypeScript equivalents
+      MergeDefinitionService # Merges custom bean overrides into OOTB definitions
+      GenerateModelsService  # Orchestrates the full generation pipeline
 resources/
   config.json        # Input/output path configuration
   type-map.json      # Java → TypeScript type mappings
+  custom-beans.xml   # (optional) Custom bean override definitions
 ```
 
 ## License

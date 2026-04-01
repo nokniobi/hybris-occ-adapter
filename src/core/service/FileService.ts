@@ -1,13 +1,13 @@
 import * as path from "path";
 import * as fs from "fs"
-import { resource } from "../decorators/resource";
+import { occ_dependency } from "../decorators/occ-dependency";
 
 
 /**
  * File service to do IO operations
  * 
  */
-@resource()
+@occ_dependency()
 export class FileService {
 
     write(location: string, content: string): void {
