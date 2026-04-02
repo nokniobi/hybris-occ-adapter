@@ -2,7 +2,11 @@
 
 > **Learning project only.** This repository is built for educational purposes and is not intended for production use.
 
-A TypeScript code generator that converts SAP Commerce (Hybris) OCC DTO bean definitions from XML into TypeScript interfaces and enums.
+A TypeScript library for SAP Commerce (Hybris) OCC API integration. It includes:
+
+- **OCC HTTP client** — fluent builder for typed OCC REST requests with interceptor support
+- **OAuth2 interceptor** — automatic token fetch and refresh for SAP Commerce authorization server
+- **Type generator** — converts SAP Commerce OCC DTO bean definitions from XML into TypeScript interfaces and enums
 
 ## What it does
 
@@ -15,6 +19,50 @@ SAP Commerce defines its OCC API data types in `*-beans.xml` files using Java cl
 - Java maps → TypeScript records (`Map<String, Product>` → `Record<string, Product>`)
 
 The generated output is written to `src/core/generated/types.ts`.
+
+## OCC HTTP Client
+
+A fluent, typed HTTP client for SAP Commerce OCC REST API requests.
+
+```typescript
+import { OccClient } from "./core/occ-client/occ-client";
+import { OccOauthInterceptor } from "./core/occ-client/interceptor/oauth-interceptor";
+import { OccHttpException } from "./core/occ-client/model/occ-http-exception";
+import { HttpMethod } from "./core/occ-client/model/http-method";
+import { FieldSet } from "./core/occ-client/model/field-set";
+
+try {
+    const result = await new OccClient<ProductSearchPageWsDTO>()
+        .url("https://localhost:9002/occ/v2/apparel-uk/products/search")
+        .method(HttpMethod.GET)
+        .fieldSet(FieldSet.BASIC)
+        .addInterceptor(new OccOauthInterceptor())
+        .execute();
+
+    console.log(result.products);
+} catch (e) {
+    if (e instanceof OccHttpException) {
+        console.error(`HTTP ${e.status}: ${e.message}`);
+    }
+}
+```
+
+### OAuth2 Interceptor
+
+`OccOauthInterceptor` automatically fetches and injects a Bearer token before each request. The token is shared across all instances (singleton per page/process) and refreshed automatically when expired.
+
+Configure the authorization server in `resources/config.json`:
+
+```json
+{
+    "net": {
+        "oAuthServerUrl": "https://localhost:9002/authorizationserver/oauth/token",
+        "clientId": "your_client_id",
+        "clientSecret": "your_client_secret",
+        "grantType": "client_credentials"
+    }
+}
+```
 
 ## Prerequisites
 
@@ -71,7 +119,7 @@ Merge behaviour:
 
 ## Configuration
 
-`resources/config.json` controls input/output paths:
+`resources/config.json` controls all input/output paths and network settings:
 
 ```json
 {
@@ -82,7 +130,18 @@ Merge behaviour:
     "customWsDtoFile": [
         "./resources/custom-beans.xml"
     ],
-    "generatedModels": "./src/core/generated/types.ts"
+    "generatedModels": "./src/core/generated/types.ts",
+    "net": {
+        "oAuthServerUrl": "https://localhost:9002/authorizationserver/oauth/token",
+        "clientId": "your_client_id",
+        "clientSecret": "your_client_secret",
+        "grantType": "client_credentials",
+        "endpoint": {
+            "search_products": {
+                "url": "https://localhost:9002/occ/v2/apparel-uk/products/search"
+            }
+        }
+    }
 }
 ```
 
@@ -100,6 +159,10 @@ src/
     generated/            # Output — generated TypeScript types
     models/               # AbstractDefinition, BeanDefinition, EnumDefinition,
                           #   PropertyDefinition, DefinitionType
+    occ-client/           # OCC HTTP client
+      interceptor/        # Interceptor interface and OAuthInterceptor
+      model/              # HttpMethod, FieldSet, OccHttpException, OAuth2Response
+      occ-client.ts       # Fluent OCC HTTP client builder
     service/
       FileService          # File I/O
       XMLService           # Parses *-beans.xml into definition models
@@ -107,7 +170,7 @@ src/
       MergeDefinitionService # Merges custom bean overrides into OOTB definitions
       GenerateModelsService  # Orchestrates the full generation pipeline
 resources/
-  config.json        # Input/output path configuration
+  config.json        # Input/output path and network configuration
   type-map.json      # Java → TypeScript type mappings
   custom-beans.xml   # (optional) Custom bean override definitions
 ```

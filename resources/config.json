@@ -6,5 +6,16 @@
     "customWsDtoFile": [
         "./resources/custom-beans.xml"
     ],
-    "generatedModels": "./src/core/generated/types.ts"
+    "generatedModels": "./src/core/generated/types.ts",
+    "net": {
+        "oAuthServerUrl": "https://localhost:9002/authorizationserver/oauth/token",
+        "clientId": "your_client_id",
+        "clientSecret": "your_client_secret",
+        "grantType": "client_credentials",
+        "endpoint": {
+            "search_products": {
+                "url": "https://localhost:9002/occ/v2/apparel-uk/products/search"
+            }
+        }
+    }
 }
