@@ -6,37 +6,32 @@ A TypeScript library for SAP Commerce (Hybris) OCC API integration. It includes:
 
 - **OCC HTTP client** — fluent builder for typed OCC REST requests with interceptor support
 - **OAuth2 interceptor** — automatic token fetch and refresh for SAP Commerce authorization server
-- **Type generator** — converts SAP Commerce OCC DTO bean definitions from XML into TypeScript interfaces and enums
-
-## What it does
-
-SAP Commerce defines its OCC API data types in `*-beans.xml` files using Java class conventions. This tool parses those XML files and generates ready-to-use TypeScript types, handling:
-
-- Java bean definitions → `export interface`
-- Java enums → `export type` union (e.g. `export type MyEnum = "A" | "B"`)
-- Java primitives → TypeScript equivalents (`String` → `string`, `Integer` → `number`, etc.)
-- Java collections → TypeScript arrays (`List<Product>` → `Product[]`)
-- Java maps → TypeScript records (`Map<String, Product>` → `Record<string, Product>`)
-
-The generated output is written to `src/core/generated/types.ts`.
+- **CLI type generator** — converts SAP Commerce OCC DTO bean definitions from XML into TypeScript interfaces and enums
 
 ## OCC HTTP Client
 
-A fluent, typed HTTP client for SAP Commerce OCC REST API requests.
+Browser and Node.js compatible. Import from the package root:
 
 ```typescript
-import { OccClient } from "./core/occ-client/occ-client";
-import { OccOauthInterceptor } from "./core/occ-client/interceptor/oauth-interceptor";
-import { OccHttpException } from "./core/occ-client/model/occ-http-exception";
-import { HttpMethod } from "./core/occ-client/model/http-method";
-import { FieldSet } from "./core/occ-client/model/field-set";
+import {
+    OccClient,
+    OccOauthInterceptor,
+    OccHttpException,
+    HttpMethod,
+    FieldSet
+} from "hybris-occ-adapter";
 
 try {
     const result = await new OccClient<ProductSearchPageWsDTO>()
         .url("https://localhost:9002/occ/v2/apparel-uk/products/search")
         .method(HttpMethod.GET)
         .fieldSet(FieldSet.BASIC)
-        .addInterceptor(new OccOauthInterceptor())
+        .addInterceptor(new OccOauthInterceptor({
+            oAuthServerUrl: "https://localhost:9002/authorizationserver/oauth/token",
+            clientId: "your_client_id",
+            clientSecret: "your_client_secret",
+            grantType: "client_credentials"
+        }))
         .execute();
 
     console.log(result.products);
@@ -51,75 +46,24 @@ try {
 
 `OccOauthInterceptor` automatically fetches and injects a Bearer token before each request. The token is shared across all instances (singleton per page/process) and refreshed automatically when expired.
 
-Configure the authorization server in `resources/config.json`:
+Config is passed directly via constructor — use Angular's `environment.ts` or any config source:
 
-```json
-{
-    "net": {
-        "oAuthServerUrl": "https://localhost:9002/authorizationserver/oauth/token",
-        "clientId": "your_client_id",
-        "clientSecret": "your_client_secret",
-        "grantType": "client_credentials"
-    }
-}
+```typescript
+new OccOauthInterceptor({
+    oAuthServerUrl: environment.oAuthServerUrl,
+    clientId: environment.clientId,
+    clientSecret: environment.clientSecret,
+    grantType: "client_credentials"
+})
 ```
 
-## Prerequisites
+## CLI Type Generator
 
-- Node.js
-- TypeScript
-- SAP Commerce bean XML files (not included — see [Setup](#setup))
+Generates TypeScript types from SAP Commerce `*-beans.xml` files. Runs in Node.js at build time — not included in browser bundles.
 
-## Setup
+### Setup
 
-The SAP Commerce bean XML files are **not included** in this repository due to SAP copyright restrictions. You must supply your own copies from a licensed SAP Commerce installation and place them at:
-
-```
-resources/commercewebservicescommons-beans.xml
-resources/webservicescommons-beans.xml
-```
-
-Optionally, place your custom bean override file at:
-
-```
-resources/custom-beans.xml
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-## Usage
-
-Build and run the generator:
-
-```bash
-npm run build:start
-```
-
-Or build separately, then run:
-
-```bash
-npm run build
-npm start
-```
-
-The generated TypeScript types will be written to `src/core/generated/types.ts`.
-
-## Custom bean overrides
-
-You can override or extend OOTB bean definitions without modifying the SAP-provided XML files. Place your custom `*-beans.xml` file(s) at the path(s) listed under `customWsDtoFile` in `config.json`.
-
-Merge behaviour:
-- If a custom bean matches an OOTB bean by class name, its property types and descriptions overwrite the OOTB ones.
-- If a custom bean has no OOTB counterpart, it is appended to the output as a new type.
-- Properties present only in the custom bean (not in the OOTB bean) are discarded.
-
-## Configuration
-
-`resources/config.json` controls all input/output paths and network settings:
+1. Create `hybris-occ-adapter-config.json` in your project root:
 
 ```json
 {
@@ -130,20 +74,31 @@ Merge behaviour:
     "customWsDtoFile": [
         "./resources/custom-beans.xml"
     ],
-    "generatedModels": "./src/core/generated/types.ts",
-    "net": {
-        "oAuthServerUrl": "https://localhost:9002/authorizationserver/oauth/token",
-        "clientId": "your_client_id",
-        "clientSecret": "your_client_secret",
-        "grantType": "client_credentials",
-        "endpoint": {
-            "search_products": {
-                "url": "https://localhost:9002/occ/v2/apparel-uk/products/search"
-            }
-        }
-    }
+    "generatedModels": "./src/generated/types.ts"
 }
 ```
+
+
+### What it generates
+
+- Java bean definitions → `export interface`
+- Java enums → `export type` union (e.g. `export type MyEnum = "A" | "B"`)
+- Java primitives → TypeScript equivalents (`String` → `string`, `Integer` → `number`, etc.)
+- Java collections → TypeScript arrays (`List<Product>` → `Product[]`)
+- Java maps → TypeScript records (`Map<String, Product>` → `Record<string, Product>`)
+
+### Custom bean overrides
+
+Override or extend OOTB bean definitions without modifying SAP-provided XML files.
+
+Merge behaviour:
+- If a custom bean matches an OOTB bean by class name, its property types and descriptions overwrite the OOTB ones.
+- If a custom bean has no OOTB counterpart, it is appended to the output as a new type.
+- Properties present only in the custom bean (not in the OOTB bean) are discarded.
+
+### SAP Commerce XML files
+
+The SAP Commerce bean XML files are **not included** due to SAP copyright restrictions. Supply your own copies from a licensed SAP Commerce installation.
 
 ## Type mapping
 
@@ -153,6 +108,8 @@ Java-to-TypeScript type mappings are defined in `resources/type-map.json`. You c
 
 ```
 src/
+  lib.ts                # Library entry point — exports OccClient, interceptors, models
+  cli.ts                # CLI entry point — type generation command
   core/
     decorators/           # @occ_dependency() — registers classes in the DI context
     dependency-injection/ # Lightweight IoC container (Context)
@@ -164,13 +121,14 @@ src/
       model/              # HttpMethod, FieldSet, OccHttpException, OAuth2Response
       occ-client.ts       # Fluent OCC HTTP client builder
     service/
+      ConfigService        # Loads hybris-occ-adapter-config.json
       FileService          # File I/O
       XMLService           # Parses *-beans.xml into definition models
       ConvertTypeService   # Maps Java types to TypeScript equivalents
       MergeDefinitionService # Merges custom bean overrides into OOTB definitions
       GenerateModelsService  # Orchestrates the full generation pipeline
+hybris-occ-adapter-config.json  # Project config (type generator paths)
 resources/
-  config.json        # Input/output path and network configuration
   type-map.json      # Java → TypeScript type mappings
   custom-beans.xml   # (optional) Custom bean override definitions
 ```

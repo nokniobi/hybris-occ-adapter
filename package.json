@@ -5,10 +5,14 @@
   "license": "ISC",
   "author": "Matvii Chebukin",
   "type": "commonjs",
-  "main": "dist/index.js",
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "bin": {
+    "occ-adapter": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc && copyfiles -u 1 ./resources/**/* dist/resources",
-    "start": "node ./dist/index.js",
+    "start": "node ./dist/cli.js",
     "build:start": "tsc && node ./dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

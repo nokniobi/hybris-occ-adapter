@@ -1,11 +1,11 @@
 import { FileService } from "./FileService";
-import config from "../../../resources/config.json";
 import { XMLService } from "./XMLService";
 import { ConvertTypeService } from "./ConvertTypeService";
 import { AbstractDefinition } from "../models/AbstractDefinition";
 import { occ_dependency } from "../decorators/occ-dependency";
 import { MergeDefinitionService } from "./MergeDefinitionService";
 import { BeanDefinition } from "../models/BeanDefinition";
+import { ConfigService } from "./ConfigService";
 
 
 @occ_dependency()
@@ -29,12 +29,14 @@ export class GenerateModelsService {
     }
 
     generate() {
+        const config = ConfigService.getInstance().getAll();
+
         const ootbDefinitions: AbstractDefinition[] = config.ootbWsDtoFile
-            .flatMap((location) =>
+            .flatMap((location: string) =>
                 this.xmlService.parse(this.fileService.read(location))
             );
         const customDefinitions: AbstractDefinition[] = config.customWsDtoFile
-            .flatMap((location) =>
+            .flatMap((location: string) =>
                 this.xmlService.parse(this.fileService.read(location))
             );
 

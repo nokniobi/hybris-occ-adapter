@@ -1,5 +1,4 @@
-// DEV ONLY — bypass self-signed cert for local Commerce instance
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+process.env.OCC_ADAPTER_CONFIG = require("path").resolve(__dirname, "../hybris-occ-adapter-config.json");
 
 import { occ_dependency } from "./core/decorators/occ-dependency";
 import { getContext } from "./core/dependency-injection/Context";
@@ -24,8 +23,8 @@ export class ModelGenerator {
 
 async function main() {
     try {
-        // getContext().getResource<ModelGenerator>(ModelGenerator).start();
-        await getContext().getResource<Demo>(Demo).run();
+        getContext().getResource<ModelGenerator>(ModelGenerator).start();
+        // await getContext().getResource<Demo>(Demo).run();
         process.exit(0);
     } catch (ex) {
         console.error("Error occured:", ex)

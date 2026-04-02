@@ -1,7 +1,13 @@
-import config from "../../../../resources/config.json";
 import { OAuth2Response } from "../model/oauth2-repsonse";
 import { OccClient } from "../occ-client";
 import { Interceptor } from "./interceptor";
+
+export interface OccOauthConfig {
+    oAuthServerUrl: string;
+    clientId: string;
+    clientSecret: string;
+    grantType: string;
+}
 
 /**
  * Interceptor that fetches an OAuth2 access token from SAP Commerce
@@ -15,24 +21,20 @@ export class OccOauthInterceptor implements Interceptor<OAuth2Response> {
     private static tokenPromise: Promise<string> | null = null;
     private static expiresAt: number = 0;
 
-    private _client_id: string;
-    private _oAuthServerUrl: string;
-    private _grantType: string;
+    private _config: OccOauthConfig;
 
-    constructor() {
-        this._client_id = config.net.clientId;
-        this._oAuthServerUrl = config.net.oAuthServerUrl;
-        this._grantType = config.net.grantType;
+    constructor(config: OccOauthConfig) {
+        this._config = config;
     }
 
     private async fetchAccessToken(): Promise<string> {
         const body = new URLSearchParams({
-            grant_type: this._grantType,
-            client_id: this._client_id,
-            client_secret: config.net.clientSecret
+            grant_type: this._config.grantType,
+            client_id: this._config.clientId,
+            client_secret: this._config.clientSecret
         });
 
-        const response = await fetch(this._oAuthServerUrl, {
+        const response = await fetch(this._config.oAuthServerUrl, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: body.toString()
